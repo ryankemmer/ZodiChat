@@ -92,7 +92,7 @@ button:hover {
 </head>
 
 
-<form method ="post" action ="/signup" style="border:1px solid #ccc">
+<form method ="post" style="border:1px solid #ccc">
   <div class="container">
     <h1>Sign Up</h1>
     <h5 style="color: red">{{ signupError }}</h5>
@@ -122,8 +122,13 @@ button:hover {
       
     <form>
     Birthday:<br>
-    <input type="date" name="birthday">
+    <input type="date" name="birthday" value="2000-07-22">
     </form>
+      
+   <form action='/api/images' method="post" enctype="multipart/form-data">
+    Upload Profile Picture: <br>
+        <input type='file' name='avatar' />
+   </form>
       
     <label>
       <input type="checkbox" checked="checked" name="remember" style="margin-bottom:15px"> Remember me
@@ -132,7 +137,7 @@ button:hover {
     <p>By creating an account you agree to our <a href="#" style="color:dodgerblue">Terms & Privacy</a>.</p>
 
     <div class="clearfix">
-        <button type="button" class="cancelbtn" onclick="/login">Cancel</button>
+        <button type="button" class="cancelbtn" href="login.twig">Cancel</button>
         <input type ="submit" class="myButton" value="SignUp"/>
     </div>
 

@@ -10,7 +10,7 @@ body {
 
 .topnav {
   overflow: hidden;
-  background-image: url(bg.png);
+  background-image: url(/public/images/bg.png);
     width: 100%;
 }
 
@@ -98,27 +98,27 @@ p
 </style>
 </header>
 
-    <head><link rel="stylesheet" type ="text/css"href="Home.css">
+    <head><link rel="stylesheet" type ="text/css"href="/public/Home.css">
     <div class="topnav">
   <a class="active" href="#home">Home</a>
   <a href="#profile" class ="profile">Profile</a>
-  <a><form method=post action="/login">
-      <input type ="submit" value="Logout"/>
-      </form></a></div></head> 
+  <a href="/logout">Logout</a></div></head> 
     
 <body>
         
         <div class="sidenav">
 </div>
+            
     
-            <img src ="./images/me.jpg" class = "mainimage"/>
+            <img src ="/profilepic/{{otherUser.userID}}" class = "mainimage"/>
             <br>
             <br>
-            <p class = "name">Lily, 20</p>
+            <p class = "name">{{ otherUser.firstName }}, {{ otherUser.age }}</p>
     <br>
     <br>
-            <img src ="./images/match.png" class = "match"/>
-            <img src ="./images/deny.png" class = "deny"/>
+    
+    <a href="/registerlike/{{otherUser.userID}}"><img src ="/public/images/match.png" class = "match"/></a>
+            <img src ="/public/images/deny.png" class = "deny"/>
     
     
     </body>
