@@ -1,49 +1,27 @@
 const express = require('express');
 const app = express();
-//const bodyParser = require('body-parser');
 const sqlite = require('sqlite');
 const bcrypt = require('bcrypt');
 const uuidv4 = require('uuid/v4');
 const cookieParser = require('cookie-parser')
 const multer = require("multer");
-//const cloudinary = require("cloudinary");
-//const cloudinaryStorage = require("multer-storage-cloudinary");
-
-
-//cloudinary.config({
-//    cloud_name: process.env.CLOUD_NAME,
-//    api_key: process.env.API_KEY,
-//    api_secret: process.env.API_SECRET
-//});
-
-//const storage = cloudinaryStorage({
-//    cloudinary: cloudinary,
-//    folder: 'public/profilepics'
-//    fileName: 
-//    allowedFormats: ["jpg", "png"],
-//    transformation: [{ width: 500, height: 500, crop: "limit" }]
-//});
-
-//const parser = multer({ storage: storage });
 
 const storage = multer.diskStorage({
     destination: 'profilepics/',
     filename: function (req, file, cb) {
-        console.log(file);
+        console.log('file uploaded', file);
         cb(null, `${uuidv4()}.jpg`);
     }
 })
 
 const upload = multer({ storage });
-console.log(upload);
 
-//app.use(bodyParser.urlencoded({ extended: false }));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'twig');
 app.disable('view cache');
 app.use(cookieParser());
 app.use('/public', express.static('public'));
-const dbPromise = sqlite.open('./data.db').then(db => db.migrate({ force: 'last' }));
+const dbPromise = sqlite.open('./data.db')
 const saltRounds = 10;
 
 const authorize = async (req, res, next) => {
@@ -89,26 +67,24 @@ app.get('/registerlike/:userID', async (req, res) => {
 
 
 app.get('/home', requireAuth, async (req, res) => {
+    const db = await dbPromise;
     console.log('on home page', req.user);
-    //        var date1 = new Date("7/13/2010");
+    //var date1 = new Date("7/13/2010");
     //var date2 = new Date("12/15/2010");
     //var timeDiff = Math.abs(date2.getTime() - date1.getTime());
     //var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
-
-    const otherUser = {
-        firstName: 'Lily', //from db
-        userID: 10, //from db
-        age: 20 //calculated above
-    };
+    const otherUser = await db.get('SELECT * FROM users WHERE userID=?', 1);
+    otherUser.age = 20;
+    console.log(otherUser);
     res.render('Home', { otherUser, user: req.user });
 });
 
-app.get('/profilepic/:userID', requireAuth, async (req, res) => {
-    console.log('rendering profile pic for ' + req.params.userID);
+app.get('/profilepic/:filename', requireAuth, async (req, res) => {
+    console.log('getting profilepic', req.params.filename);
     const options = {
         root: __dirname + '/profilepics/'
     }
-    res.sendFile(`${req.params.userID}.jpg`, options);
+    res.sendFile(req.params.filename, options);
 });
 
 app.get('/logout', async (req, res) => {
@@ -122,51 +98,42 @@ app.get('/signup', async (req, res) => {
     res.render('Signup');
 });
 
-//app.post('/api/images', parser.single("image"), (req, res) => {
-//  console.log(req.file) // to see what is returned to you
-//  const image = {};
-//  image.url = req.file.url;
-//  image.id = req.file.public_id;
-//  Image.create(image) // save image information in database
-//    .then(newImage => res.json(newImage))
-//    .catch(err => console.log(err));
-//});
+app.post('/signup', upload.single('avatar'), async (req, res) => {
+    const db = await dbPromise;
+    debugger;
+    const user = await db.get('SELECT * FROM users WHERE email=?;', req.body.email);
+    if (user) {
+        res.status(400).render('Signup', { signupError: 'ERROR: account already exists' });
+        return;
+    }
+    const passwordHash = await bcrypt.hash(req.body.password, saltRounds);
+    const result = await db.run(
+        'INSERT INTO users(firstName,lastName,passwordHash,email,gender,birthday,created,profilepic) VALUES (?,?,?,?,?,?,?,?);',
+        req.body.firstname,
+        req.body.lastname,
+        passwordHash,
+        req.body.email,
+        req.body.gender,
+        req.body.birthday,
+        Date.now(),
+        req.file.filename
+    );
 
-app.post('/signup',
-    upload.single('avatar'),
-    async (req, res, next) => {
-        const db = await dbPromise;
-        console.log(req.file);
-        const user = await db.get('SELECT * FROM users WHERE email=?;', req.body.email);
-        if (user) {
-            res.status(400).render('Signup', { signupError: 'ERROR: account already exists' });
-            return;
-        }
-        const passwordHash = await bcrypt.hash(req.body.password, saltRounds);
-        console.log(req.body.birthday);
-        const result = await db.run(
-            'INSERT INTO users(firstname,lastname,passwordHash,email,gender,birthday,created,profilepic) VALUES (?,?,?,?,?,?,?,?);',
-            req.body.firstname,
-            req.body.lastname,
-            passwordHash,
-            req.body.email,
-            req.body.gender,
-            req.body.birthday,
-            date.now(),
-            req.file.filename
-        );
+    //if (req.body.remember = checked) {
         const newUserID = result.stmt.lastID;
         const newUser = await db.get('SELECT * FROM users WHERE userID=?', newUserID);
         const sessionToken = uuidv4();
-        debugger;
         await db.run('INSERT INTO session (user_account_id, session_token) VALUES (?, ?);', newUser.userID, sessionToken);
         res.cookie('sessionToken', sessionToken);
-        res.redirect('/home');
-    });
+   // };
+
+    res.redirect('/home');
+});
 
 app.get('/login', async (req, res) => {
     res.render('login');
-})
+});
+
 app.post('/login', upload.none(), async (req, res) => {
     const db = await dbPromise;
     const user = await db.get('SELECT * FROM users WHERE email=?', req.body.email);
