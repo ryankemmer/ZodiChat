@@ -1,10 +1,12 @@
 const express = require('express');
+const bodyParser = require("body-parser");
 const app = express();
 const sqlite = require('sqlite');
 const bcrypt = require('bcrypt');
 const uuidv4 = require('uuid/v4');
 const cookieParser = require('cookie-parser')
 const multer = require("multer");
+
 
 const storage = multer.diskStorage({
     destination: 'profilepics/',
@@ -15,6 +17,7 @@ const storage = multer.diskStorage({
 })
 
 const upload = multer({ storage });
+const bodyParse = bodyParser.urlencoded({extended: true});
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'twig');
@@ -58,25 +61,57 @@ app.get('/', async (req, res) => {
 });
 
 
-app.get('/registerlike/:userID', async (req, res) => {
-    //req.params.id
-    //do some databse stuff
+app.get('/registerlike/:userID', requireAuth, async (req, res) => {
+    const db = await dbPromise;
+    id1 = req.user.userID;
+    id2 = req.params.userID;
+    const match = await db.run ('INSERT INTO likes(user1,user2) VALUES (?,?);',
+        id1,
+        id2);
     console.log(`user ${req.user.userID} likes user ${req.params.userID}`)
     res.redirect('/home')
-})
+});
+
+app.get('/registerdislike/:userID', requireAuth, async (req, res) => {
+    const db = await dbPromise;
+    id1 = req.user.userID;
+    id2 = req.params.userID;
+        const unmatch = await db.run ('INSERT INTO dislikes(user1,user2) VALUES (?,?);',
+        id1,
+        id2);
+    console.log(`user ${req.user.userID} dislikes user ${req.params.userID}`)
+    res.redirect('/home')
+});
+
 
 
 app.get('/home', requireAuth, async (req, res) => {
     const db = await dbPromise;
-    console.log('on home page', req.user);
-    //var date1 = new Date("7/13/2010");
-    //var date2 = new Date("12/15/2010");
-    //var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-    //var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
-    const otherUser = await db.get('SELECT * FROM users WHERE userID=?', 1);
-    otherUser.age = 20;
-    console.log(otherUser);
+
+    //calculate year
+    const d = new Date();
+    const currentYear = d.getFullYear();
+
+    //get gender
+    if (req.user.gender == "Male"){
+        othergender = "Female";
+    } else {othergender = "Male"};
+
+    //find previous matches
+    const userLikes = await db.all('SELECT * FROM likes WHERE user1=?', req.user.userID);
+    const userDislikes = await db.all('SELECT * FROM likes WHERE user1=?', req.user.userID);
+
+    //retrieve other user
+    const otherUser = await db.get('SELECT * FROM users WHERE sign=? AND gender=?', req.user.sign, othergender);
+    const otherUser = await db.get('SELECT * FROM users WHERE userID=?', 1); 
+
+    //determine age
+    userBirthday = otherUser.birthday;
+    var dateParts = userBirthday.split("-");
+    otherUser.age = currentYear - dateParts[0];
+    
     res.render('Home', { otherUser, user: req.user });
+
 });
 
 app.get('/profilepic/:filename', requireAuth, async (req, res) => {
@@ -98,7 +133,7 @@ app.get('/signup', async (req, res) => {
     res.render('Signup');
 });
 
-app.post('/signup', upload.single('avatar'), async (req, res) => {
+app.post('/signup', upload.single('avatar'), bodyParse, async (req, res) => {
     const db = await dbPromise;
     debugger;
     const user = await db.get('SELECT * FROM users WHERE email=?;', req.body.email);
@@ -107,8 +142,94 @@ app.post('/signup', upload.single('avatar'), async (req, res) => {
         return;
     }
     const passwordHash = await bcrypt.hash(req.body.password, saltRounds);
+
+
+    //get horoscope
+    var zod_signs = ["Capricorn" , "Aquarius", "Pisces", "Aries",
+    "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio",
+    "Sagittarius"];
+    var dateParts = userBirthday.split("-");
+    var day = dateParts[2];
+    var month = dateParts[1];
+
+    switch(month){
+        case 00: {//January
+                 if(day < 20)
+                     zodiacSign = zod_signs[0];
+                 else
+                     zodiacSign = zod_signs[1];
+                }break;
+        case 01: {//February
+                 if(day < 19)
+                     zodiacSign = zod_signs[1];
+                 else
+                     zodiacSign = zod_signs[2];
+                }break;
+        case 02: {//March
+                 if(day < 21)
+                     zodiacSign = zod_signs[2];
+                 else
+                     zodiacSign = zod_signs[3];
+                }break;
+        case 03: {//April
+                 if(day < 20)
+                     zodiacSign = zod_signs[3];
+                 else
+                     zodiacSign = zod_signs[4];
+                }break;
+        case 04: {//May
+                 if(day < 21)
+                     zodiacSign = zod_signs[4];
+                 else
+                     zodiacSign = zod_signs[5];
+                }break;
+        case 05: {//June
+                 if(day < 21)
+                     zodiacSign = zod_signs[5];
+                 else
+                     zodiacSign = zod_signs[6];
+                }break;
+        case 06: {//July
+                 if(day < 23)
+                     zodiacSign = zod_signs[6];
+                 else
+                     zodiacSign = zod_signs[7];
+                }break;
+         case 07: {//August
+                 if(day < 23)
+                     zodiacSign = zod_signs[7];
+                 else
+                     zodiacSign = zod_signs[8];
+                }break;
+        case 08: {//September
+                 if(day < 23)
+                     zodiacSign = zod_signs[8];
+                 else
+                     zodiacSign = zod_signs[9];
+                }break;
+        case 09: {//October
+                 if(day < 23)
+                     zodiacSign = zod_signs[9];
+                 else
+                     zodiacSign = zod_signs[10];
+                }break;
+        case 10: {//November
+                 if(day < 22)
+                     zodiacSign = zod_signs[10];
+                 else
+                     zodiacSign = zod_signs[11];
+                }break;
+        case 11: {//December
+                 if(day < 22)
+                     zodiacSign = zod_signs[11];
+                 else
+                     zodiacSign = zod_signs[0];
+                }break;
+     }
+        
+
     const result = await db.run(
-        'INSERT INTO users(firstName,lastName,passwordHash,email,gender,birthday,created,profilepic) VALUES (?,?,?,?,?,?,?,?);',
+        'INSERT INTO users(firstName,lastName,passwordHash,email,gender,birthday,created,profilepic,sign) VALUES (?,?,?,?,?,?,?,?,?);',
         req.body.firstname,
         req.body.lastname,
         passwordHash,
@@ -116,28 +237,33 @@ app.post('/signup', upload.single('avatar'), async (req, res) => {
         req.body.gender,
         req.body.birthday,
         Date.now(),
-        req.file.filename
+        req.file.filename,
+        zodiacSign
+
     );
 
-    //if (req.body.remember = checked) {
+    //if (req.body.rememberMe.checked == true ) {
         const newUserID = result.stmt.lastID;
         const newUser = await db.get('SELECT * FROM users WHERE userID=?', newUserID);
         const sessionToken = uuidv4();
         await db.run('INSERT INTO session (user_account_id, session_token) VALUES (?, ?);', newUser.userID, sessionToken);
         res.cookie('sessionToken', sessionToken);
-   // };
+  // }
+   // else {
+    //    return;
+    //};
 
     res.redirect('/home');
 });
+
 
 app.get('/login', async (req, res) => {
     res.render('login');
 });
 
-app.post('/login', upload.none(), async (req, res) => {
+app.post('/login', bodyParse, async (req, res) => {
     const db = await dbPromise;
     const user = await db.get('SELECT * FROM users WHERE email=?', req.body.email);
-    console.log(user);
     if (!user) {
         res.status(401).render('login', { loginError: 'email or password is incorrect' });
         return;
