@@ -1,4 +1,4 @@
-//test test
+//test test test
 
 const express = require('express');
 const bodyParser = require("body-parser");
@@ -99,17 +99,39 @@ app.get('/home', requireAuth, async (req, res) => {
         othergender = "Female";
     } else {othergender = "Male"};
 
-    //find previous matches
-    const userLikes = await db.all('SELECT * FROM likes WHERE user1=?', req.user.userID);
-    const userDislikes = await db.all('SELECT * FROM likes WHERE user1=?', req.user.userID);
+    //find previous matches and counts
+    const allUsersObject = db.all('SELECT * FROM users');
+    const userLikesObject = await db.all('SELECT * FROM likes WHERE user1=?', req.user.userID);
+    const userDisLikesObject = await db.all('SELECT * FROM dislikes WHERE user1=?', req.user.userID);
+    
+    const userLikesArray = userLikesObject.map(function (obj) {
+        return obj.user2;
+    });
+    const userDislikesArray = userDisLikesObject.map(function (obj){
+        return obj.user2;
+    });
+
+    const allUsersArray = allUsersObject.map(function (obj) {
+        return obj.userID;
+    })
+
+    const alreadyLiked = userLikesArray.concat(userDislikesArray);
+
+    allUsersArray = allUsersArray.filter(function(item){
+        return !alreadyLiked.includes(item);
+    })
+    
+    console.log(othergender);
+    console.log(req.user.sign);
+    console.log(allUsersArray);
 
     //retrieve other user
-    const otherUser = await db.get('SELECT * FROM users WHERE sign=? AND gender=?', req.user.sign, othergender);
-    const otherUser = await db.get('SELECT * FROM users WHERE userID=?', 1); 
+    const otherUser = await db.get('SELECT * FROM users WHERE sign=? AND gender=? AND userID=?', req.user.sign, othergender, allUsersArray[0]);
 
     //determine age
     userBirthday = otherUser.birthday;
-    var dateParts = userBirthday.split("-");
+    
+    //var dateParts = userBirthday.split("-");
     otherUser.age = currentYear - dateParts[0];
     
     res.render('Home', { otherUser, user: req.user });
