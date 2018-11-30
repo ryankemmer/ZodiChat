@@ -85,6 +85,9 @@ app.get('/registerdislike/:userID', requireAuth, async (req, res) => {
     res.redirect('/home')
 });
 
+app.get('/profile', requireAuth, async (req, res) => {
+    res.render('profile', {user: req.user});
+})
 
 
 app.get('/home', requireAuth, async (req, res) => {
@@ -116,8 +119,6 @@ app.get('/home', requireAuth, async (req, res) => {
         return item['user2'];
     });
 
-    console.log(allUsersArray);
-
     const alreadyLiked = userLikesArray.concat(userDislikesArray);
 
     allUsersArray = allUsersArray.filter(function(item){
@@ -126,6 +127,10 @@ app.get('/home', requireAuth, async (req, res) => {
     
     console.log(allUsersArray);
 
+    if (allUsersArray.length < 1) {
+        res.render('Home', { homeError: 'Sorry, no more users to display!'})
+    }
+
     //retrieve other user
     const otherUser = await db.get('SELECT * FROM users WHERE sign=? AND userID=?', req.user.sign, allUsersArray[0]);
 
@@ -133,7 +138,17 @@ app.get('/home', requireAuth, async (req, res) => {
     userBirthday = otherUser.birthday;
     var dateParts = userBirthday.split("-");
     otherUser.age = currentYear - dateParts[0];
-    
+
+    //retrieve all matches
+
+    otherUsersLikes = await db.all('SELECT * FROM likes WHERE user2=?', req.user.userID);
+
+    var otherUsersLikesArray = otherUsersLikes.map(function(item){
+        return item['user1'];
+    });
+
+
+
     res.render('Home', { otherUser, user: req.user });
 
 });

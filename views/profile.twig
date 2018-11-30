@@ -1,7 +1,7 @@
 <html>
     
 <header>
-    <style>
+<style>
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
@@ -40,11 +40,9 @@ body {
     z-index: 1;
     top: 0;
     left: 0;
-    background-color: #111;
+    background-color: #6E0867;
     overflow-x: hidden;
-    padding-top: 0px;
-    color: white;
-    text-align: center;
+    padding-top: 100px;
 }
 
 .sidenav a {
@@ -108,22 +106,21 @@ p
     
 <body>
         
-<div class="sidenav"> 
- <h3>New Matches</h3>
-    
-
+        <div class="sidenav">
 </div>
             
-            <h1 style="color: red">{{ homeError }}</h1>
-            <img src ="/profilepic/{{otherUser.profilepic}}" class = "mainimage"/>
+    
+            <img src ="/profilepic/{{user.profilepic}}" class = "mainimage"/>
             <br>
-            <br>
-            <p class = "name">{{ otherUser.firstName }}, {{ otherUser.age }}</p>
+            <p class = "name">Name: {{ user.firstName }} {{ user.lastName }}</p>
+            <p class ="name">Date of Birth: {{user.birthday}}</p>
+            <p class ="name">Zodiac: {{user.sign}}</p>
+            <p class ="name">Gender: {{user.gender}}</p>
+            
     <br>
     <br>
     
-    <a href="/registerlike/{{otherUser.userID}}"><img src ="/public/images/match.png" class = "match"/></a>
-    <a href="/registerdislike/{{otherUser.userID}}"><img src ="/public/images/deny.png" class = "deny"/></a>
+    <a href="/registerlike/{{otherUser.userID}}">
     
     
     </body>
