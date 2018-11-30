@@ -95,43 +95,43 @@ app.get('/home', requireAuth, async (req, res) => {
     const currentYear = d.getFullYear();
 
     //get gender
-    if (req.user.gender == "Male"){
+    if (req.user.gender = "Male"){
         othergender = "Female";
     } else {othergender = "Male"};
 
     //find previous matches and counts
-    const allUsersObject = db.all('SELECT * FROM users');
-    const userLikesObject = await db.all('SELECT * FROM likes WHERE user1=?', req.user.userID);
-    const userDisLikesObject = await db.all('SELECT * FROM dislikes WHERE user1=?', req.user.userID);
-    
-    const userLikesArray = userLikesObject.map(function (obj) {
-        return obj.user2;
-    });
-    const userDislikesArray = userDisLikesObject.map(function (obj){
-        return obj.user2;
+    const allUsersObjects = await db.all('SELECT * FROM users');
+    const userLikesObjects = await db.all('SELECT * FROM likes WHERE user1=?', req.user.userID);
+    const userDisLikesObjects = await db.all('SELECT * FROM dislikes WHERE user1=?', req.user.userID);
+
+    var allUsersArray = allUsersObjects.map(function(item){
+        return item['userID'];
     });
 
-    const allUsersArray = allUsersObject.map(function (obj) {
-        return obj.userID;
-    })
+    var userLikesArray = userLikesObjects.map(function (item){
+        return item['user2']
+    });
+
+    var userDislikesArray = userDisLikesObjects.map(function (item){
+        return item['user2'];
+    });
+
+    console.log(allUsersArray);
 
     const alreadyLiked = userLikesArray.concat(userDislikesArray);
 
     allUsersArray = allUsersArray.filter(function(item){
         return !alreadyLiked.includes(item);
-    })
+    });
     
-    console.log(othergender);
-    console.log(req.user.sign);
     console.log(allUsersArray);
 
     //retrieve other user
-    const otherUser = await db.get('SELECT * FROM users WHERE sign=? AND gender=? AND userID=?', req.user.sign, othergender, allUsersArray[0]);
+    const otherUser = await db.get('SELECT * FROM users WHERE sign=? AND userID=?', req.user.sign, allUsersArray[0]);
 
-    //determine age
+    //determine other user age
     userBirthday = otherUser.birthday;
-    
-    //var dateParts = userBirthday.split("-");
+    var dateParts = userBirthday.split("-");
     otherUser.age = currentYear - dateParts[0];
     
     res.render('Home', { otherUser, user: req.user });
