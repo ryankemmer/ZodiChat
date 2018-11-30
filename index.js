@@ -265,19 +265,21 @@ app.post('/signup', upload.single('avatar'), bodyParse, async (req, res) => {
         zodiacSign
 
     );
-
-    //if (req.body.rememberMe.checked == true ) {
+/*
+    if (req.body.rememberMe.checked == true ) {
         const newUserID = result.stmt.lastID;
         const newUser = await db.get('SELECT * FROM users WHERE userID=?', newUserID);
         const sessionToken = uuidv4();
         await db.run('INSERT INTO session (user_account_id, session_token) VALUES (?, ?);', newUser.userID, sessionToken);
         res.cookie('sessionToken', sessionToken);
-  // }
-   // else {
-    //    return;
-    //};
+  }
+   else {
+    return;
+    };
 
     res.redirect('/home');
+*/
+
 });
 
 
