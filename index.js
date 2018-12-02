@@ -70,15 +70,32 @@ app.get('/registerlike/:userID', requireAuth, async (req, res) => {
     const match = await db.run ('INSERT INTO likes(user1,user2) VALUES (?,?);',
         id1,
         id2);
+    const otherUserLikes = await db.all('SELECT user2 FROM likes WHERE user1=?;', id2);
+    console.log(otherUserLikes);
+
+    /*
+    var otherUserLikesArray = otherUserLikes.map(function(item){
+        return item['id2'];
+    });
+
+    if(otherUserLikesArray.includes(id1)){
+        const newMatch = await db.run ('INSERT INTO matches(user1,user2) VALUES (?,?);',
+            id1,
+            id2);
+    }else{
+        return;
+    };
+    */
+   
     console.log(`user ${req.user.userID} likes user ${req.params.userID}`)
-    res.redirect('/home')
+    res.redirect('/home');
 });
 
 app.get('/registerdislike/:userID', requireAuth, async (req, res) => {
     const db = await dbPromise;
     id1 = req.user.userID;
     id2 = req.params.userID;
-        const unmatch = await db.run ('INSERT INTO dislikes(user1,user2) VALUES (?,?);',
+    const unmatch = await db.run ('INSERT INTO dislikes(user1,user2) VALUES (?,?);',
         id1,
         id2);
     console.log(`user ${req.user.userID} dislikes user ${req.params.userID}`)
@@ -88,6 +105,10 @@ app.get('/registerdislike/:userID', requireAuth, async (req, res) => {
 app.get('/profile', requireAuth, async (req, res) => {
     res.render('profile', {user: req.user});
 })
+
+app.get('/HomeError', requireAuth, async (req,res) => {
+    res.render('HomeError', {user: req.user});
+});
 
 
 app.get('/home', requireAuth, async (req, res) => {
@@ -100,7 +121,9 @@ app.get('/home', requireAuth, async (req, res) => {
     //get gender
     if (req.user.gender = "Male"){
         othergender = "Female";
-    } else {othergender = "Male"};
+    } else if (req.user.gender = "Female"){
+        othergender = "Male";
+    } else {othergender = "Other"};
 
     //find previous matches and counts
     const allUsersObjects = await db.all('SELECT * FROM users');
@@ -127,12 +150,12 @@ app.get('/home', requireAuth, async (req, res) => {
     
     console.log(allUsersArray);
 
-    if (allUsersArray.length < 1) {
-        res.render('Home', { homeError: 'Sorry, no more users to display!'})
-    }
-
     //retrieve other user
     const otherUser = await db.get('SELECT * FROM users WHERE sign=? AND userID=?', req.user.sign, allUsersArray[0]);
+    
+    if (otherUser == null) {
+        res.redirect('HomeError');
+    }   
 
     //determine other user age
     userBirthday = otherUser.birthday;
@@ -141,16 +164,22 @@ app.get('/home', requireAuth, async (req, res) => {
 
     //retrieve all matches
 
+    /*
     otherUsersLikes = await db.all('SELECT * FROM likes WHERE user2=?', req.user.userID);
 
     var otherUsersLikesArray = otherUsersLikes.map(function(item){
         return item['user1'];
     });
 
+    var matches = [];
+    allUsersArray = allUsersArray.filter(function(item){
+        return !alreadyLiked.includes(item);
+    });
+    */
 
 
     res.render('Home', { otherUser, user: req.user });
-
+       
 });
 
 app.get('/profilepic/:filename', requireAuth, async (req, res) => {
