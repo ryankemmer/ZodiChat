@@ -320,73 +320,73 @@ app.post('/signup', upload.single('avatar'), bodyParse, async (req, res) => {
     day = parseInt(day,10);
 
     switch(month){
-	case 0: {//January
+	case 1: {//January
 			 if(day < 20)
 		 		zodiacSign = zod_signs[0];
 			 else
 		 		zodiacSign = zod_signs[1];
 		    }break;
-	case 1: {//February
+	case 2: {//February
 			 if(day < 19)
 		 		zodiacSign = zod_signs[1];
 			 else
 		 		zodiacSign = zod_signs[2];
 			}break;
-	case 2: {//March
+	case 3: {//March
 			 if(day < 21)
 			 	zodiacSign = zod_signs[2];
 			 else
 			 	zodiacSign = zod_signs[3];
 			}break;
-	case 3: {//April
+	case 4: {//April
 			 if(day < 20)
 		 		zodiacSign = zod_signs[3];
 			 else
 		 		zodiacSign = zod_signs[4];
 			}break;
-	case 4: {//May
+	case 5: {//May
 			 if(day < 21)
 		 		zodiacSign = zod_signs[4];
 			 else
 		 		zodiacSign = zod_signs[5];
 			}break;
-	case 5: {//June
+	case 6: {//June
 			 if(day < 21)
 		 		zodiacSign = zod_signs[5];
 			 else
 		 		zodiacSign = zod_signs[6];
 			}break;
-	case 6: {//July
+	case 7: {//July
 			 if(day < 23)
 		 		zodiacSign = zod_signs[6];
 			 else
 		 		zodiacSign = zod_signs[7];
 			}break;
- 	case 7: {//August
+ 	case 8: {//August
 			 if(day < 23)
 		 		zodiacSign = zod_signs[7];
 			 else
 		 		zodiacSign = zod_signs[8];
 			}break;
-	case 8: {//September
+	case 9: {//September
 			 if(day < 23)
 		 		zodiacSign = zod_signs[8];
 			 else
 		 		zodiacSign = zod_signs[9];
 			}break;
-	case 9: {//October
+	case 10: {//October
 			 if(day < 23)
 		 		zodiacSign = zod_signs[9];
 			 else
 		 		zodiacSign = zod_signs[10];
 			}break;
-	case 10: {//November
+	case 11: {//November
 			 if(day < 22)
 		 		zodiacSign = zod_signs[10];
 			 else
 		 		zodiacSign = zod_signs[11];
 			}break;
-	case 11: {//December
+	case 12: {//December
 			 if(day < 22)
 		 		zodiacSign = zod_signs[11];
 			 else
