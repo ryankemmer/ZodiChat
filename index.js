@@ -73,6 +73,63 @@ app.get('/', async (req, res) => {
     res.render('login');
 });
 
+app.get('/about', requireAuth, async(req, res) => {
+    const db = await dbPromise;
+    var allMatches = [];
+
+     //retrieve all matches
+     const matches = await db.all('SELECT user1,user2 FROM matches WHERE user1=? OR user2=?', req.user.userID, req.user.userID);
+    
+     //store user1 and user2 from matches into array 
+     var matchesUser1 = matches.map(function (item){
+         return item['user1'];
+     });
+ 
+     var matchesUser2 = matches.map(function (item){
+         return item['user2'];
+     });
+ 
+     allMatches = matchesUser1.concat(matchesUser2);
+     allMatches.remove(req.user.userID);
+     console.log("Matches:  " + allMatches);
+ 
+     const allUsers = await db.all('SELECT * FROM users');
+ 
+    res.render('About', {user: req.user, allUsers, allMatches});
+});
+
+app.get('/chatroom/:id', requireAuth, async (req,res) => {
+    const db = await dbPromise;
+    //retrieve all matches
+    const matches = await db.all('SELECT user1,user2 FROM matches WHERE user1=? OR user2=?', req.user.userID, req.user.userID);
+    
+    //store user1 and user2 from matches into array 
+    var matchesUser1 = matches.map(function (item){
+        return item['user1'];
+    });
+
+    var matchesUser2 = matches.map(function (item){
+        return item['user2'];
+    });
+
+    allMatches = matchesUser1.concat(matchesUser2);
+    allMatches.remove(req.user.userID);
+    const allUsers = await db.all('SELECT * FROM users');
+
+    otherUserID = req.params.id;
+    const sentMessages = await db.all('SELECT * FROM messages WHERE user1=? AND user2=?', req.user.userID, otherUserID);
+    const recievedMessages = await db.all('SELECT * FROM messages WHERE user1=? AND user2=?;', otherUserID, req.user.userID);
+    res.render('chatroom', {sentMessages, recievedMessages, allUsers, allMatches, user: req.user, otherUserID});
+
+});
+
+app.post('/message/:id', requireAuth, async (req, res) => {
+    const db = await dbPromise;
+    otherUserID = req.params.id;  
+    await db.run('INSERT INTO messages (user1, user2, Author, message) VALUES (?,?,?,?)', req.user.userID, otherUserID, req.user.firstname, req.body.message);
+    res.redirect('chatroom/' + otherUserID);
+});
+
 
 app.get('/registerlike/:userID', requireAuth, async (req, res) => {
     const db = await dbPromise;
@@ -138,7 +195,7 @@ app.get('/profile', requireAuth, async (req, res) => {
      const allUsers = await db.all('SELECT * FROM users');
  
     res.render('profile', {user: req.user, allUsers, allMatches});
-})
+});
 
 
 app.get('/home', requireAuth, async (req, res) => {
@@ -206,13 +263,17 @@ app.get('/home', requireAuth, async (req, res) => {
 
     //retrieve other user
     otherUser = await db.get('SELECT * FROM users WHERE sign=? AND userID=?', req.user.sign, allUsersArray[0]);
+
+    if (!otherUser) {
+        res.status(400).render('Home', { homeError: 'No more users to display!', allUsers, allMatches});
+    }
     
     //determine other user age
     userBirthday = otherUser.birthday;
     var dateParts = userBirthday.split("-");
     otherUser.age = currentYear - dateParts[0];
 
-    res.render('Home', { otherUser, allUsers, allMatches, user: req.user });
+    res.render('Home', { otherUser, allUsers, allMatches, user: req.user, matches});
        
 });
 
