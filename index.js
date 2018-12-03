@@ -234,7 +234,7 @@ app.get('/home', requireAuth, async (req, res) => {
     } else {othergender = "Other"};
 
     //find previous matches and counts
-    const allUsersObjects = await db.all('SELECT * FROM users');
+    const allUsersObjects = await db.all('SELECT * FROM users WHERE sign=?', req.user.sign);
     const userLikesObjects = await db.all('SELECT * FROM likes WHERE user1=?', req.user.userID);
     const userDisLikesObjects = await db.all('SELECT * FROM dislikes WHERE user1=?', req.user.userID);
 
