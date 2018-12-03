@@ -10,7 +10,7 @@ body {
 
 .topnav {
   overflow: hidden;
-  background-image: url(/public/images/bg.png);
+  background-image: url(/public/images/b.jpg);
     width: 100%;
 }
 
@@ -40,11 +40,17 @@ body {
     z-index: 1;
     top: 0;
     left: 0;
-    background-color: #111;
+    background-color: rgba(33,0,60,0.95);
     overflow-x: hidden;
-    padding-top: 0px;
+    padding-top: 100px;
+    padding: 14px 0px;
+    
     color: white;
+    
+    margin-left: 0px;
+    list-style-type: none;
     text-align: center;
+    padding-top: 2px;
 }
 
 .sidenav a {
@@ -67,34 +73,47 @@ body {
 
 .mainimage
 {
-    height: 80%;
-    width: 45%;
-    padding-top: 100px;
-    padding-left: 320px;
-    display: inline-block;
+    height: 450px;
+    width: 400px;
+    padding-top: 10px;
+    padding-left: 200px;
     align-content: center;
 }
-.name
-{
-    text-align: center;
-}
+
 .match
 {
-    height: 20%;
-    width: 15%;
-    padding-left: 210px;
+    height: 130px;
+    width: 130px;
+    padding-left: 100px;
+    padding-bottom: 130px;
+    
 }
 .deny
 {
-    height:15%;
-    width: 10%;
-    padding-left: 430px;
+    height:100px;
+    width: 100px;
+    padding-left: 220px;
+    padding-bottom: 150px;
+    
+   
 }
-p
+.name
 {
-    font-size: 30px;
+    font-size:20px;
+    padding-left: 590px;
+    
 }
-
+#links
+{
+    padding: 14px 0px;
+    
+    color: white;
+    border-bottom: solid 1px;
+    margin-left: 0px;
+}
+.inline{
+   display: inline-block;
+}
 
 
 </style>
@@ -108,57 +127,29 @@ p
     
 <body>
         
-<div class="sidenav"> 
- <h3>New Matches</h3>
-    
-
+        <div class="sidenav">
+            <h3 style="border-bottom: solid 1px">New Matches</h3>
+            {% for user in allUsers %}
+                {% if user.userID in allMatches %}
+                    <li id="links">{{user.firstName}}</li>
+                {% endif %}
+            {% endfor %}
 </div>
             
-            <img src ="/profilepic/{{otherUser.profilepic}}" class = "mainimage"/>
-            <br>
-            <br>
-            <p class = "name">{{ otherUser.firstName }}, {{ otherUser.age }}, {{ otherUser.sign }}</p>
-    <br>
-    <br>
+    <h1>{{homeError}}</h1>
     
-    <a href="/registerlike/{{otherUser.userID}}"><img src ="/public/images/match.png" class = "match"/></a>
-    <a href="/registerdislike/{{otherUser.userID}}"><img src ="/public/images/deny.png" class = "deny"/></a>
+    
+    <div class ="inline"><a href="/registerlike/{{otherUser.userID}}"><img src ="/public/images/match.png" class = "match"/></div></a>
+    <div class ="inline"><img src ="/profilepic/{{otherUser.profilepic}}" class = "mainimage"/></div>
+    <div class ="inline"><a href="/registerdislike/{{otherUser.userID}}"><img src ="/public/images/deny.png" class = "deny"/></a></div>
+            <br>
+            <br>
+            <p class = "name">{{ otherUser.firstName }}, {{ otherUser.age }}</p>
+    <br>
+    <br>
     
     
     </body>
 </html>
 
-                                                      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+          

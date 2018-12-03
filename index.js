@@ -58,6 +58,17 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
 app.get('/', async (req, res) => {
     res.render('login');
 });
@@ -71,24 +82,26 @@ app.get('/registerlike/:userID', requireAuth, async (req, res) => {
         id1,
         id2);
     const otherUserLikes = await db.all('SELECT user2 FROM likes WHERE user1=?;', id2);
-    console.log(otherUserLikes);
 
-    /*
     var otherUserLikesArray = otherUserLikes.map(function(item){
-        return item['id2'];
+        return item['user2'];
     });
+    
+    console.log(otherUserLikesArray);
 
-    if(otherUserLikesArray.includes(id1)){
+    if(otherUserLikesArray == null){
+        res.redirect('/home');
+    }
+    else if(otherUserLikesArray.includes(id1)){
         const newMatch = await db.run ('INSERT INTO matches(user1,user2) VALUES (?,?);',
             id1,
             id2);
-    }else{
-        return;
+        console.log(`user ${req.user.userID} matched with user ${req.params.userID}`)
     };
-    */
-   
+
     console.log(`user ${req.user.userID} likes user ${req.params.userID}`)
     res.redirect('/home');
+    
 });
 
 app.get('/registerdislike/:userID', requireAuth, async (req, res) => {
@@ -103,26 +116,64 @@ app.get('/registerdislike/:userID', requireAuth, async (req, res) => {
 });
 
 app.get('/profile', requireAuth, async (req, res) => {
-    res.render('profile', {user: req.user});
-})
+    const db = await dbPromise;
+    var allMatches = [];
 
-app.get('/HomeError', requireAuth, async (req,res) => {
-    res.render('HomeError', {user: req.user});
-});
+     //retrieve all matches
+     const matches = await db.all('SELECT user1,user2 FROM matches WHERE user1=? OR user2=?', req.user.userID, req.user.userID);
+    
+     //store user1 and user2 from matches into array 
+     var matchesUser1 = matches.map(function (item){
+         return item['user1'];
+     });
+ 
+     var matchesUser2 = matches.map(function (item){
+         return item['user2'];
+     });
+ 
+     allMatches = matchesUser1.concat(matchesUser2);
+     allMatches.remove(req.user.userID);
+     console.log("Matches:  " + allMatches);
+ 
+     const allUsers = await db.all('SELECT * FROM users');
+ 
+    res.render('profile', {user: req.user, allUsers, allMatches});
+})
 
 
 app.get('/home', requireAuth, async (req, res) => {
     const db = await dbPromise;
+    var allMatches = [];
+
+    //retrieve all matches
+    const matches = await db.all('SELECT user1,user2 FROM matches WHERE user1=? OR user2=?', req.user.userID, req.user.userID);
+    
+    //store user1 and user2 from matches into array 
+    var matchesUser1 = matches.map(function (item){
+        return item['user1'];
+    });
+
+    console.log("user1:  " + matchesUser1);
+
+    var matchesUser2 = matches.map(function (item){
+        return item['user2'];
+    });
+
+    allMatches = matchesUser1.concat(matchesUser2);
+    allMatches.remove(req.user.userID);
+    console.log("Matches:  " + allMatches);
+
+    const allUsers = await db.all('SELECT * FROM users');
 
     //calculate year
     const d = new Date();
     const currentYear = d.getFullYear();
 
     //get gender
-    if (req.user.gender = "Male"){
-        othergender = "Female";
-    } else if (req.user.gender = "Female"){
-        othergender = "Male";
+    if (req.user.gender = "male"){
+        othergender = "female";
+    } else if (req.user.gender = "female"){
+        othergender = "male";
     } else {othergender = "Other"};
 
     //find previous matches and counts
@@ -148,37 +199,20 @@ app.get('/home', requireAuth, async (req, res) => {
         return !alreadyLiked.includes(item);
     });
     
-    console.log(allUsersArray);
+    //remove current user
+    allUsersArray.remove(req.user.userID);
+
+    console.log("allUsersArray: " + allUsersArray);
 
     //retrieve other user
-    const otherUser = await db.get('SELECT * FROM users WHERE sign=? AND userID=?', req.user.sign, allUsersArray[0]);
+    otherUser = await db.get('SELECT * FROM users WHERE sign=? AND userID=?', req.user.sign, allUsersArray[0]);
     
-    if (otherUser == null) {
-        res.redirect('HomeError');
-    }   
-
     //determine other user age
     userBirthday = otherUser.birthday;
     var dateParts = userBirthday.split("-");
     otherUser.age = currentYear - dateParts[0];
 
-    //retrieve all matches
-
-    /*
-    otherUsersLikes = await db.all('SELECT * FROM likes WHERE user2=?', req.user.userID);
-
-    var otherUsersLikesArray = otherUsersLikes.map(function(item){
-        return item['user1'];
-    });
-
-    var matches = [];
-    allUsersArray = allUsersArray.filter(function(item){
-        return !alreadyLiked.includes(item);
-    });
-    */
-
-
-    res.render('Home', { otherUser, user: req.user });
+    res.render('Home', { otherUser, allUsers, allMatches, user: req.user });
        
 });
 
@@ -314,20 +348,6 @@ app.post('/signup', upload.single('avatar'), bodyParse, async (req, res) => {
         zodiacSign
 
     );
-/*
-    if (req.body.rememberMe.checked == true ) {
-        const newUserID = result.stmt.lastID;
-        const newUser = await db.get('SELECT * FROM users WHERE userID=?', newUserID);
-        const sessionToken = uuidv4();
-        await db.run('INSERT INTO session (user_account_id, session_token) VALUES (?, ?);', newUser.userID, sessionToken);
-        res.cookie('sessionToken', sessionToken);
-  }
-   else {
-    return;
-    };
-
-    res.redirect('/home');
-*/
 
     res.redirect('/login');
 });
