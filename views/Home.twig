@@ -6,6 +6,7 @@ body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
     padding-left: 160px;
+    background-image: url(/public/images/starfield.jpg)
 }
 
 .topnav {
@@ -101,8 +102,23 @@ body {
 {
     font-size:20px;
     padding-left: 590px;
-    color: rgba(33,0,60,0.95);
+    color: white;
+    animation-name: textanimation;
+    animation-duration: 1s;
     
+}
+
+@keyframes textanimation{
+0% { 
+        opacity:0;
+        transform: translateY(-4rem)
+    scale(.6)}
+}
+100% {
+        opacity: 1;
+        transform: none;
+    
+}
 }
 
 .links
@@ -130,6 +146,16 @@ body {
    display: inline-block;
 }
 
+.inline2{
+    display: inline-block;
+}
+
+.inline:hover{
+    -webkit-transform: scale(0.8);
+    -ms-transform: scale(0.8);
+    transform: scale(0.8);
+}
+
 
 
 
@@ -155,11 +181,11 @@ body {
             {% endfor %}
 </div>
             
-    <h1>{{homeError}}</h1>
+    <h1 style="color:white">{{homeError}}</h1>
     
     
     <div class ="inline"><a href="/registerlike/{{otherUser.userID}}"><img src ="/public/images/match.png" class = "match"/></div></a>
-    <div class ="inline"><img src ="/profilepic/{{otherUser.profilepic}}" class = "mainimage"/></div>
+    <div class ="inline2"><img src ="/profilepic/{{otherUser.profilepic}}" class = "mainimage"/></div>
     <div class ="inline"><a href="/registerdislike/{{otherUser.userID}}"><img src ="/public/images/deny.png" class = "deny"/></a></div>
             <br>
             <br>
