@@ -4,10 +4,10 @@ A web application designed to connect users by using information from their horo
 
 ## Authors
 
-Ryan Kemmer \n
-Lily Minsky \n
-Romonte Moore \n
-Isaac Alemu \n
+Ryan Kemmer,
+Lily Minsky,
+Romonte Moore,
+and Isaac Alemu
 
 ## Instructions
 
