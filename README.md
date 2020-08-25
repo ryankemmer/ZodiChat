@@ -1,15 +1,15 @@
-## Zodichat
+# Zodichat
 
 A web application designed to connect users by using information from their horoscopes. The concept of this application is to allow users to match with other users that have compatible horospces. Once a user has a match, they will then be able to chat with other users. This is a prototype and by no means is a fully scalable version of the concept. Written in the Fall of 2018. 
 
-# Authors
+## Authors
 
-Ryan Kemmer
-Lily Minsky
-Romonte Moore
-Isaac Alemu
+Ryan Kemmer \n
+Lily Minsky \n
+Romonte Moore \n
+Isaac Alemu \n
 
-# Instructions
+## Instructions
 
 1. Clone repo. In your terminal, set the current directory to this repository
 2. Install dependencies, including Node.js, express, bcrpyt, bodyparser, uuidv4, cookieparser, twig and multer.
