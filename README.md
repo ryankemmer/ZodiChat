@@ -15,7 +15,7 @@ and Isaac Alemu
 2. Install dependencies, including Node.js, express, bcrpyt, bodyparser, uuidv4, cookieparser, twig and multer.
 3. Once all dependencies are installed, type 'npm start' to launch.
 4. To confirm the server is working, the terminal will read 'listening on port 3000'.
-5. On your web browser, search 'localhost:3000'
+5. On your web browser, route to https://localhost:3000'
 6. Enjoy!
 
 (Disclaimer: While this is a working prototype, this is by no means a full scalve version of this app. If you would like to improve on this idea, feel free to send me a pull request!!! xD ) 
